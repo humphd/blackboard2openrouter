@@ -1,0 +1,42 @@
+{
+  "name": "blackboard2openrouter",
+  "version": "0.1.0",
+  "description": "Generate OpenRouter API keys from Blackboard CSV exports",
+  "type": "module",
+  "author": "David Humphrey <david.andrew.humphrey@gmail.com>",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "blackboard2openrouter": "./dist/bin/cli.js"
+  },
+  "scripts": {
+    "prepare": "pnpm build",
+    "build": "tsc",
+    "clean": "rm -fr dist",
+    "prettier": "prettier . --write",
+    "format": "pnpm prettier",
+    "prettier-check": "prettier . --check",
+    "format-check": "pnpm prettier-check",
+    "typecheck": "tsc --noEmit",
+    "lint": "oxlint"
+  },
+  "license": "BSD-2-Clause",
+  "dependencies": {
+    "chalk": "^5.6.2",
+    "commander": "^14.0.2",
+    "csv-parse": "^6.1.0",
+    "openrouter-key-manager": "^0.12.0"
+  },
+  "devDependencies": {
+    "@tsconfig/node24": "^24.0.1",
+    "@types/node": "^24.9.2",
+    "oxlint": "^1.25.0",
+    "prettier": "3.6.2",
+    "typescript": "^5.9.3"
+  }
+}
