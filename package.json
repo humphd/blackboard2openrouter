@@ -1,6 +1,6 @@
 {
   "name": "blackboard2openrouter",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Generate OpenRouter API keys from Blackboard CSV exports",
   "type": "module",
   "author": "David Humphrey <david.andrew.humphrey@gmail.com>",
