@@ -38,21 +38,26 @@ blackboard2openrouter [options] <csv-file>
 
 ### Required Options
 
-- `-l, --limit <amount>` - Spending limit in US dollars (e.g., `15`)
-- `-c, --course <code>` - Course code (e.g., `CCP555`)
-- `-s, --section <section>` - Section (e.g., `NAA`, `NBB`)
-- `-t, --term <term>` - Term (e.g., `fall`, `winter`, `summer`,
-  `fall2025`)
+- `-l, --limit <amount>` - Spending limit in **US dollars** (e.g., `15`)
+- `-c, --course <code>` - Course code without spaces (e.g., `CCP555`)
+- `-s, --section <section>` - Section without spaces (e.g., `NAA`, `NBB`)
+- `-t, --term <term>` - Term without spaces (e.g., `fall`, `winter`, `summer`, `fall2025`)
 
 ### Optional
 
-- `-d, --date <date>` - Issue date in `YYYY-MM-DD` format
-  (default: today)
-- `-e, --email-domain <example.com>` - Sets the email domain to use when creating
-  email addresses (default: `myseneca.ca`)
+- `-d, --date <date>` - Issue date in `YYYY-MM-DD` format (default: today)
+- `-e, --email-domain <domain>` - Email domain to use when creating email addresses (default: `myseneca.ca`)
 - `-o, --output <file>` - Output CSV filename (default: auto-generated)
-- `--provisioning-key <key>` - OpenRouter provisioning API key
-  (or use `OPENROUTER_PROVISIONING_KEY` env var)
+- `--provisioning-key <key>` - OpenRouter provisioning API key (or use `OPENROUTER_PROVISIONING_KEY` env var)
+
+### Validation Rules
+
+The tool validates all options before processing:
+
+- **limit**: Must be a positive number greater than 0
+- **course, section, term**: Must be non-empty strings without spaces
+- **email-domain**: Must be a valid domain without `@` symbol (e.g., `myseneca.ca`, not `@myseneca.ca`)
+- **date**: Must be in `YYYY-MM-DD` format if provided
 
 ## Examples
 
@@ -79,10 +84,10 @@ blackboard2openrouter \
 blackboard2openrouter \
   --limit 20 \
   --course DPS909 \
-  --section B \
+  --section NBB \
   --term winter2025 \
   --output dps909-keys.csv \
-  gc_DSP909NSA.02834.2257_fullgc_2025-10-08-18-35-41.csv
+  gc_DPS909NBB.02834.2257_fullgc_2025-10-08-18-35-41.csv
 ```
 
 ### Specify Date
@@ -91,10 +96,22 @@ blackboard2openrouter \
 blackboard2openrouter \
   --limit 15 \
   --course CCP555 \
-  --section A \
+  --section NAA \
   --term fall2025 \
   --date 2025-09-01 \
-  grades.csv
+  gc_CCP555NAA.02834.2257_fullgc_2025-09-01.csv
+```
+
+### Custom Email Domain
+
+```bash
+blackboard2openrouter \
+  --limit 15 \
+  --course CCP555 \
+  --section NAA \
+  --term fall2025 \
+  --email-domain example.edu \
+  gc_CCP555NAA.02834.2257_fullgc_2025-09-01.csv
 ```
 
 ## Input Format
@@ -108,75 +125,53 @@ Other columns (grades, names, etc.) are ignored.
 
 ## Output Format
 
-The tool generates a CSV file with these columns:
+The tool generates a CSV file compatible with [openrouter-key-manager](https://www.npmjs.com/package/openrouter-key-manager) bulk operations.
 
-- `email` - Student's email
-- `studentId` - Student's ID
-- `name` - Full key name (username + tags + date)
+The first three columns (`name`, `key`, `hash`) match the standard format, with additional student information columns at the end:
+
+- `name` - Full key name (email + tags + date)
 - `key` - The actual API key (distribute to students)
 - `hash` - Key hash for management operations
-
-**Example Output:**
-
-```csv
-username,studentId,name,key,hash
-abhinav1,131252231,"abhinav1 CCP555 A fall2025 student 2025-09-01",sk-or-v1-...,hash-...
-bchen102,160370227,"bchen102 CCP555 A fall2025 student 2025-09-01",sk-or-v1-...,hash-...
-```
+- `username` - Student's username
+- `studentId` - Student's ID
+- `email` - Generated email address
 
 **Default Filename:** `{course}-{section}-{term}-{date}.csv`
+
+**Note:** The extra columns at the end are ignored by `openrouter-key-manager` bulk operations, making this file compatible with both tools.
 
 ## Key Naming
 
 Keys are automatically named using this format:
 
+```text
+{email} {course} {section} {term} student {date}
 ```
-{username} {course} {section} {term} student {date}
-```
-
-**Examples:**
-
-- `abhinav1 CCP555 A fall2025 student 2025-09-01`
-- `bchen102 DPS909 B winter2025 student 2025-01-15`
-
-## Distributing Keys to Students
-
-After generating keys, you can:
-
-1. **Extract just username and key columns:**
-
-   ```bash
-   cut -d',' -f1,4 CCP555-A-fall2025-2025-09-01.csv > keys-to-distribute.csv
-   ```
-
-2. **Import into your LMS** (Blackboard, Canvas, etc.)
-
-3. **Email individually** using a mail merge tool
-
-4. **Create a script** to send personalized emails
 
 ## Managing Keys
 
-Use [openrouter-key-manager](https://www.npmjs.com/package/openrouter-key-manager)
-to manage the generated keys:
+The output CSV is fully compatible with [openrouter-key-manager](https://www.npmjs.com/package/openrouter-key-manager) bulk operations:
 
 ```bash
 # List all keys for a course
 openrouter-key-manager list --pattern "*CCP555*"
 
 # Generate usage report
-openrouter-key-manager report --pattern "*CCP555*A*fall2025*"
+openrouter-key-manager report --pattern "*CCP555*NAA*fall2025*"
 
-# Increase limits mid-semester
-openrouter-key-manager set-limit \
-  --pattern "*CCP555*A*fall2025*" \
-  --limit 25 -y
+# Increase limits mid-semester using the CSV file
+openrouter-key-manager bulk-set-limit \
+  --limit 25 \
+  CCP555-NAA-fall2025-2025-09-01.csv -y
 
 # Disable a student's key
-openrouter-key-manager disable --pattern "abhinav1*" -y
+openrouter-key-manager disable --pattern "studentname*" -y
 
-# Delete all keys at semester end
-openrouter-key-manager bulk-delete CCP555-A-fall2025-2025-09-01.csv -y
+# Rotate all keys at semester end
+openrouter-key-manager bulk-rotate CCP555-NAA-fall2025-2025-09-01.csv -y
+
+# Delete all keys using the CSV file
+openrouter-key-manager bulk-delete CCP555-NAA-fall2025-2025-09-01.csv -y
 ```
 
 ## Complete Workflow
@@ -198,101 +193,16 @@ In Blackboard:
 blackboard2openrouter \
   --limit 15 \
   --course CCP555 \
-  --section A \
+  --section NAA \
   --term fall2025 \
-  gc_CCP555_A_fullgc_2025-09-01.csv
+  gc_CCP555NAA.02834.2257_fullgc_2025-09-01.csv
 ```
-
-### 3. Distribute Keys
-
-Extract and distribute the keys to students:
-
-```bash
-# Create distribution file (username and key only)
-cut -d',' -f1,4 CCP555-A-fall2025-2025-09-01.csv | \
-  tail -n +2 > distribute.csv
-```
-
-### 4. Monitor Usage
-
-```bash
-# Weekly check
-openrouter-key-manager list --pattern "*CCP555*A*fall2025*"
-
-# Detailed report
-openrouter-key-manager report \
-  --pattern "*CCP555*A*fall2025*" \
-  --output weekly-report.html
-```
-
-### 5. Adjust Limits
-
-```bash
-# Increase for all students
-openrouter-key-manager set-limit \
-  --pattern "*CCP555*A*fall2025*" \
-  --limit 25 -y
-
-# Increase for specific student
-openrouter-key-manager set-limit \
-  --pattern "abhinav1*CCP555*" \
-  --limit 30 -y
-```
-
-### 6. End of Semester Cleanup
-
-```bash
-# Delete all keys using the original output CSV
-openrouter-key-manager bulk-delete \
-  CCP555-A-fall2025-2025-09-01.csv -y
-```
-
-## Best Practices
-
-1. **Keep the output CSV** - You'll need it for management operations
-
-2. **Use consistent naming** - Stick to a term naming convention
-   (e.g., `fall2025`, `winter2025`)
-
-3. **Set appropriate limits** - Start conservative, increase as needed
-
-4. **Monitor regularly** - Generate weekly reports to track usage
-
-5. **Secure distribution** - Use secure channels to distribute API keys
-
-6. **Document the process** - Keep notes on limits, dates, and any
-   adjustments
-
-7. **Plan for multiple sections** - Run the tool separately for each
-   section if you want different limits or tracking
-
-## Troubleshooting
-
-### "Missing required columns" error
-
-Make sure your Blackboard CSV has `Username` and `Student ID` columns.
-The tool is case-sensitive for column names.
-
-### "No students found" error
-
-Check that:
-
-- The CSV file is not empty
-- The CSV has a header row
-- Student rows have values in Username and Student ID columns
-
-### Provisioning key not found
-
-Set the environment variable:
-
-```bash
-export OPENROUTER_PROVISIONING_KEY=your_key_here
-```
-
-Or pass it via `--provisioning-key` option.
 
 ## Related Tools
 
-- [openrouter-key-manager](https://www.npmjs.com/package/openrouter-key-manager) -
-  Manage OpenRouter API keys
+- [openrouter-key-manager](https://www.npmjs.com/package/openrouter-key-manager) - Manage OpenRouter API keys
 - [OpenRouter.ai](https://openrouter.ai/) - Unified API for LLMs
+
+## License
+
+BSD-2-Clause
