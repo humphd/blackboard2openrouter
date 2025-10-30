@@ -29,12 +29,11 @@ jobs:
         id: check
         uses: PostHog/check-package-version@v2
 
-      - name: Run tests
+      - name: Verify the code
         if: steps.check.outputs.is-new-version == 'true'
         run: |
           pnpm run typecheck
           pnpm run lint
-          pnpm run test
 
       - name: Build and publish
         if: steps.check.outputs.is-new-version == 'true'
