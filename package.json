@@ -16,6 +16,7 @@
     "prepare": "pnpm build",
     "build": "tsc",
     "clean": "rm -fr dist",
+    "check": "pnpm format-check && pnpm lint && pnpm typecheck",
     "prettier": "prettier . --write",
     "format": "pnpm prettier",
     "prettier-check": "prettier . --check",
@@ -27,13 +28,13 @@
   "dependencies": {
     "chalk": "^5.6.2",
     "commander": "^14.0.2",
-    "csv-parse": "^6.1.0",
-    "openrouter-key-manager": "^0.12.0"
+    "csv-parse": "^6.2.1",
+    "openrouter-key-manager": "^0.13.1"
   },
   "devDependencies": {
     "@tsconfig/node24": "^24.0.1",
     "@types/node": "^24.9.2",
-    "oxlint": "^1.25.0",
+    "oxlint": "^1.69.0",
     "prettier": "3.6.2",
     "typescript": "^5.9.3"
   },
