@@ -53,7 +53,7 @@ program
         date: options.date,
         output: options.output,
         emailDomain: options.emailDomain,
-        workspacePrefix: options.workspacePrefix
+        workspacePrefix: options.workspacePrefix,
       });
     } catch (error: any) {
       if (error instanceof ValidationError) {
