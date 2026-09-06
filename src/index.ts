@@ -100,6 +100,7 @@ export async function processBlackboardCsv(
         limit: options.limit,
         tags,
         date: options.date,
+        workspace: workspace.id,
       });
 
       keyRecords.push({
