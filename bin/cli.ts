@@ -32,6 +32,10 @@ program
     "-e, --email-domain <domain>",
     "Email domain to use when creating email addresses (default: myseneca.ca)",
   )
+  .option(
+    "-w, --workspace-prefix <prefix>",
+    "The prefix to add to the course code when choosing the workspace (default: Seneca-Acad-)",
+  )
   .option("-o, --output <file>", "Output CSV filename")
   .option(
     "--provisioning-key <key>",
@@ -49,6 +53,7 @@ program
         date: options.date,
         output: options.output,
         emailDomain: options.emailDomain,
+        workspacePrefix: options.workspacePrefix
       });
     } catch (error: any) {
       if (error instanceof ValidationError) {

@@ -15,6 +15,7 @@ export interface ProcessOptions {
   date?: string;
   output?: string;
   emailDomain?: string;
+  workspacePrefix?: string;
 }
 
 export interface KeyRecord {

@@ -47,6 +47,7 @@ blackboard2openrouter [options] <csv-file>
 
 - `-d, --date <date>` - Issue date in `YYYY-MM-DD` format (default: today)
 - `-e, --email-domain <domain>` - Email domain to use when creating email addresses (default: `myseneca.ca`)
+- `-w, --workspace-prefix <prefix>` - The prefix to use when finding/creating workspaces (default: `Seneca-Acad-`)
 - `-o, --output <file>` - Output CSV filename (default: auto-generated)
 - `--provisioning-key <key>` - OpenRouter provisioning API key (or use `OPENROUTER_PROVISIONING_KEY` env var)
 
@@ -154,10 +155,10 @@ The output CSV is fully compatible with [openrouter-key-manager](https://www.npm
 
 ```bash
 # List all keys for a course
-openrouter-key-manager list --pattern "*CCP555*"
+openrouter-key-manager --workspace Seneca-Acad-CCP555 list
 
-# Generate usage report
-openrouter-key-manager report --pattern "*CCP555*NAA*fall2025*"
+# Generate usage report for fall2025 in CCP555
+openrouter-key-manager --workspace Seneca-Acad-CCP555 report --pattern "*fall2025*"
 
 # Increase limits mid-semester using the CSV file
 openrouter-key-manager bulk-set-limit \

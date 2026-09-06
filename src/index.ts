@@ -1,10 +1,49 @@
-import { create, getProvisioningKey } from "openrouter-key-manager";
+import {
+  create,
+  createWorkspace,
+  getProvisioningKey,
+  resolveWorkspace,
+} from "openrouter-key-manager";
 import { writeFileSync } from "node:fs";
 import { parseBlackboardCsv } from "./parser.js";
 import type { ProcessOptions, KeyRecord } from "./types.js";
 import { validateOptions, validateBlackboardCsv } from "./validation.js";
 
 const DEFAULT_EMAIL_DOMAIN = "myseneca.ca";
+const DEFAULT_WORKSPACE_PREFIX = "Seneca-Acad-";
+
+async function resolveWorkspaceId(
+  provisioningKey: string,
+  workspacePrefix: string,
+  courseCode: string,
+): Promise<{ workspaceId: string; workspaceName: string } | null> {
+  const workspaceName = `${workspacePrefix}${courseCode}`;
+  const workspaceSlug = courseCode;
+
+  // Make sure the workspace exists, otherwise create it
+  try {
+    const workspace = await resolveWorkspace(provisioningKey, workspaceName);
+    if (!workspace) {
+      throw new Error(`Could not find workspace "${workspace}"`);
+    }
+
+    return { workspaceId: workspace.id, workspaceName: workspace.name };
+    // oxlint-disable-next-line no-unused-vars
+  } catch (_) {
+    try {
+      // Try to create it
+      const workspace = await createWorkspace({
+        name: workspaceName,
+        slug: workspaceSlug,
+      });
+      return { workspaceId: workspace.id, workspaceName: workspace.name };
+      // oxlint-disable-next-line no-unused-vars
+    } catch (_) {
+      console.error(`Unable to find or create workspace "${workspaceName}"`);
+      return null;
+    }
+  }
+}
 
 /**
  * Process a Blackboard CSV and create OpenRouter API keys
@@ -15,6 +54,8 @@ export async function processBlackboardCsv(
 ): Promise<KeyRecord[]> {
   validateOptions(options);
   validateBlackboardCsv(csvPath);
+  const provisioningKey = getProvisioningKey(options.provisioningKey);
+
   const students = parseBlackboardCsv(
     csvPath,
     options.emailDomain || DEFAULT_EMAIL_DOMAIN,
@@ -24,14 +65,26 @@ export async function processBlackboardCsv(
   }
   console.error(`Found ${students.length} students in ${csvPath}`);
 
+  // Build the workspace for the course
+  const workspacePrefix = options.workspacePrefix ?? DEFAULT_WORKSPACE_PREFIX;
+  const workspace = await resolveWorkspaceId(
+    provisioningKey,
+    workspacePrefix,
+    options.courseCode,
+  );
+  if (!workspace) {
+    process.exit(1);
+  }
+
   // Build tags from course info
-  const tags = [options.courseCode, options.section, options.term, "student"];
-  console.error(`Creating API keys with $${options.limit} USD limit`);
+  const tags = [options.section, options.term, "student"];
+  console.error(
+    `Creating API keys with $${options.limit} USD limit in workspace "${workspace.workspaceName}"`,
+  );
   console.error(`Tags: ${tags.filter(Boolean).join(", ")}`);
 
   // Create keys for each student
   const keyRecords: KeyRecord[] = [];
-  const provisioningKey = getProvisioningKey(options.provisioningKey);
 
   for (let i = 0; i < students.length; i++) {
     const student = students[i];
