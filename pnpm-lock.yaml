@@ -18,8 +18,8 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
       openrouter-key-manager:
-        specifier: ^0.16.0
-        version: 0.16.0(@types/node@24.9.2)
+        specifier: ^0.16.1
+        version: 0.16.1(@types/node@24.9.2)
     devDependencies:
       '@tsconfig/node24':
         specifier: ^24.0.5
@@ -491,8 +491,8 @@ packages:
     resolution: {integrity: sha512-dkEJPVvun4FryqBmZ5KhDo0K9iDXAwn08tMLDinNdRBNPcYEDiWYysLcc6k3mjTMlbP9KyylvRpd4wFtwrT9rw==}
     engines: {node: ^20.17.0 || >=22.9.0}
 
-  openrouter-key-manager@0.16.0:
-    resolution: {integrity: sha512-EwgJ2ceDE9LSC4znZBGkEHkoxZeO7QUCyHEnjzdC8ASWZgLURS+CWdXxQLLETqSZrOwn3XWagzON0/ejz7nbDg==}
+  openrouter-key-manager@0.16.1:
+    resolution: {integrity: sha512-JqfOYik6P5g6Z2b8Af51+e5OC0DX+7rUgE0pwmC4iSRYwXsiniOgkQ7y8LO6lLwEuqZDJeNMakjcF8mbqlvYNg==}
     hasBin: true
 
   oxlint@1.81.0:
@@ -853,7 +853,7 @@ snapshots:
 
   mute-stream@3.0.0: {}
 
-  openrouter-key-manager@0.16.0(@types/node@24.9.2):
+  openrouter-key-manager@0.16.1(@types/node@24.9.2):
     dependencies:
       '@openrouter/sdk': 1.2.107
       chalk: 6.0.0

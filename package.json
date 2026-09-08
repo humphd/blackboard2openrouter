@@ -30,7 +30,7 @@
     "chalk": "^6.0.0",
     "commander": "^15.0.0",
     "csv-parse": "^7.0.2",
-    "openrouter-key-manager": "^0.16.0"
+    "openrouter-key-manager": "^0.16.1"
   },
   "devDependencies": {
     "@tsconfig/node24": "^24.0.5",
